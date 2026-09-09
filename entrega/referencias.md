@@ -8,7 +8,7 @@ _Taller 5 - Evaluación de Seguridad con STRIDE_
 
 ---
 
-## 📚 Referencias utilizadas
+## Referencias utilizadas
 
 ### Marco STRIDE y modelado de amenazas
 
