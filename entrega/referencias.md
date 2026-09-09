@@ -1,8 +1,8 @@
-# 📚 Referencias Bibliográficas del Taller
+# Referencias Bibliográficas del Taller
 
 Este archivo contiene las fuentes consultadas para el desarrollo del taller, tanto para el componente técnico (marco STRIDE y laboratorio) como para la investigación complementaria sobre buenas prácticas de seguridad en el sector de educación superior.
 
-## 🔖 Taller
+## Taller
 
 _Taller 5 - Evaluación de Seguridad con STRIDE_
 
@@ -48,7 +48,7 @@ _Taller 5 - Evaluación de Seguridad con STRIDE_
 
 ---
 
-## 📌 Nota sobre el uso de herramientas
+## Nota sobre el uso de herramientas
 
 Fuente asistida por IA: Claude (Anthropic), septiembre de 2026. Se usó como apoyo para estructurar la tabla STRIDE y revisar la redacción del informe. El análisis del sistema del cliente, los supuestos y la priorización de riesgos son propios del equipo y se contrastaron con la información levantada directamente con la unidad.
 
