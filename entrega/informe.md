@@ -1,16 +1,16 @@
-# 📄 Informe Técnico del Taller
+# Informe Técnico del Taller
 
-## 🔖 Nombre del Taller
+## Taller Seguridad
 
 _Taller 5 - Evaluación de Seguridad con STRIDE_
 
-## 👥 Integrantes del equipo
+## Integrantes del equipo
 
-- Juan Pablo Luna Zuleta (juanluzu@unisabana.edu.co)
+- Juan Pablo Luna Zuleta
 - Alejandro Riveros
 - Martín Ortega
 
-## 🧠 Descripción general del trabajo
+## Descripción general del trabajo
 
 El objetivo del taller era usar STRIDE para pasar de una intuición vaga sobre "qué podría salir mal" a una lista de amenazas concretas, priorizadas y con una mitigación verificable para cada una. Lo hicimos en dos partes. En clase aplicamos el marco sobre el caso base de EdukIT, tomando el flujo de procesamiento de pagos con la pasarela externa, y complementamos el análisis levantando OWASP Juice Shop en local para ejecutar de verdad cuatro de los ataques que habíamos escrito en el papel. Después trasladamos la metodología al sistema de nuestro cliente real: el proceso de mantenimiento y conciliación del Directorio de Extensiones Telefónicas de la Jefatura de Cultura de Innovación y Servicio de la Universidad de La Sabana.
 
@@ -18,7 +18,7 @@ El resultado son dos tablas STRIDE (una por cada parte), una vista priorizada de
 
 Vale la pena decir de entrada que el sistema del cliente no es una aplicación web con endpoints, como sí lo es EdukIT. Es un archivo de Excel de aproximadamente 6.400 registros que vive en OneDrive, se concilia a mano contra la nómina que envía Desarrollo Humano y lo consultan cuatro gestoras de servicio para redirigir llamadas. Esa diferencia terminó siendo lo más interesante del taller y le dedicamos una sección aparte.
 
-## 🔧 Proceso de desarrollo
+## Proceso de desarrollo
 
 Seguimos los cinco pasos de la guía sin saltarnos ninguno, porque el primer intento que hicimos —escribir amenazas directamente sobre la lista de elementos sensibles, sin dibujar nada— nos produjo justamente lo que la guía advierte como error frecuente: frases genéricas del tipo "el archivo se puede alterar", que no dicen qué elemento ni cómo ni qué falta para impedirlo.
 
@@ -28,7 +28,7 @@ Para la columna de controles existentes decidimos no adivinar. Hicimos reconocim
 
 Un punto de método que discutimos bastante: la mayoría de los ejemplos de STRIDE están escritos para aplicaciones con API y base de datos, y nuestro cliente no tiene eso. Nos costó un rato aceptar que un archivo de Excel en OneDrive sí es un almacén de datos en el sentido del DFD, que la profesional que lo edita sí es un proceso, y que una conversación de Teams donde se pide una extensión sí es un flujo de datos. Una vez asumimos eso, el marco funcionó sin forzarlo.
 
-## 🧩 Análisis del modelo propuesto
+## Análisis del modelo propuesto
 
 ### Paso 1 — DFD del flujo analizado
 
@@ -36,9 +36,9 @@ Escogimos el proceso de **mantenimiento y conciliación del directorio de extens
 
 ```mermaid
 flowchart LR
-    dh(["🏛️ Desarrollo Humano"])
-    tec(["🛠️ Analista de aprovisionamiento (Dir. Tecnología)"])
-    gestoras(["📞 Gestoras de servicio (×4)"])
+    dh(["Desarrollo Humano"])
+    tec(["Analista de aprovisionamiento (Dir. Tecnología)"])
+    gestoras(["Gestoras de servicio (×4)"])
 
     subgraph unidad["Jefatura de Cultura de Innovación y Servicio (zona de confianza del proceso)"]
         prof["P1: Conciliación nómina ↔ directorio<br/>(Profesional de Experiencia y Servicio)"]
@@ -101,7 +101,7 @@ La vista ordenada está en la hoja `Priorizacion` del mismo archivo. El bloque d
 
 Las seis primeras salieron altas porque su probabilidad es alta o media y ya se materializan hoy con frecuencia observable, no porque el impacto individual sea catastrófico. C3, C4, C8 y C10 tienen probabilidad alta: no son hipótesis, son cosas que el cliente ya nos describió que pasan.
 
-### 🔎 Reconocimiento pasivo autorizado
+### Reconocimiento pasivo autorizado
 
 Registramos lo revisado en la hoja `Reconocimiento_Pasivo`, con una columna de estado de verificación para distinguir lo confirmado de lo pendiente. Lo que quedó verificado a esta fecha es que el portal institucional se sirve sobre HTTPS con certificado válido y que el dominio opera sobre Microsoft 365, lo cual confirma la restricción de espacio de solución que ya habíamos documentado en el Corte 1: cualquier propuesta tiene que caber dentro del tenant, porque instalar software externo exige revisión de comité y por eso el desarrollo de un equipo anterior nunca se desplegó.
 
@@ -109,7 +109,7 @@ Quedan pendientes de ejecutar la revisión de cabeceras de seguridad HTTP, la ob
 
 Todo lo anterior es observación de lo que el sistema ya expone públicamente. No enviamos credenciales de prueba, no intentamos inyecciones, no accedimos a rutas privadas y no probamos contraseñas.
 
-### 🆚 Diferencias con el caso base
+### Diferencias con el caso base
 
 | Dimensión | EdukIT (caso base) | Directorio de Extensiones (cliente real) |
 |---|---|---|
@@ -125,7 +125,7 @@ La diferencia que más cambió nuestro análisis es la del atacante. En EdukIT c
 
 La segunda diferencia relevante es que en el cliente real las mitigaciones no se escriben en código. Cuando la restricción institucional es no instalar software externo, la respuesta a "revalidar permisos en el servidor" se convierte en "definir dos grupos de Entra ID y aplicar menor privilegio sobre una lista de SharePoint". Es el mismo principio con otro instrumento.
 
-### 📌 Supuestos tomados
+### Supuestos tomados
 
 1. El archivo del directorio se administra desde OneDrive for Business dentro del tenant institucional y no desde una copia local sincronizada como fuente principal. Está por confirmar con el cliente.
 2. No sabemos si el archivo se comparte por enlace abierto o por permisos nominales. De esa respuesta depende que C2 baje de riesgo alto a medio, y lo dejamos anotado explícitamente en la tabla.
@@ -133,7 +133,7 @@ La segunda diferencia relevante es que en el cliente real las mitigaciones no se
 4. Los controles de plataforma de Microsoft 365 (cifrado en tránsito y en reposo, MFA, historial de versiones) los damos por activos por ser el comportamiento por defecto del servicio, no porque los hayamos verificado uno a uno en el tenant.
 5. La automatización con Power Automate todavía no está implementada; C9 es una amenaza sobre el diseño propuesto, no sobre el estado actual. La incluimos a propósito porque es más barato corregirla ahora que después.
 
-### 🧭 Traducción a ArchiMate
+### Traducción a ArchiMate
 
 Siguiendo la sección 8 de la guía, cada mitigación priorizada es candidata a modelarse como **Requirement** en la capa de Motivación, con una relación de **Influence** hacia el elemento de Aplicación o Tecnología que protege. Así queda el bloque de riesgo alto:
 
@@ -147,11 +147,11 @@ Siguiendo la sección 8 de la guía, cada mitigación priorizada es candidata a 
 
 Esto conecta el taller con el modelo que ya veníamos construyendo: las cinco filas de arriba entran como requisitos en la vista de Motivación sin necesidad de inventar elementos nuevos.
 
-## 📈 Diagrama final entregado
+## Diagrama final entregado
 
 El DFD del flujo analizado está incluido arriba en formato Mermaid y se renderiza directamente en GitHub. El DFD del caso base de EdukIT está en [`../clase/notas.md`](../clase/notas.md).
 
-## 📋 Tabla de actores, entidades o componentes
+## Tabla de actores, entidades o componentes
 
 | Nombre del elemento | Tipo | Descripción | Responsable |
 |---|---|---|---|
@@ -163,7 +163,7 @@ El DFD del flujo analizado está incluido arriba en formato Mermaid y se renderi
 | Directorio de extensiones (D2) | Almacén de datos | Aproximadamente 6.400 registros; activo crítico del canal telefónico | Jefatura de Cultura de Innovación y Servicio |
 | Solicitud de aprovisionamiento (P3) | Proceso | Canal informal por Teams o correo, sin registro estructurado ni confirmación | Ambas unidades |
 
-## 🔍 Investigación complementaria
+## Investigación complementaria
 
 ### Tema investigado
 
@@ -177,11 +177,11 @@ En el plano técnico usamos tres referencias. La primera es la ISO/IEC 27001:202
 
 La conclusión que sacamos de cruzar las tres fuentes con nuestra tabla es que el trabajo pendiente del cliente es de gobierno, no de tecnología. La plataforma ya trae los controles: Purview para clasificar, Entra ID para segregar, SharePoint para versionar por elemento, Power Platform para acotar conectores. Lo que no existe es la decisión de usarlos ni el rol que responda por ellos. Eso encaja con el diagnóstico que veníamos sosteniendo desde el Corte 1, y le da un argumento normativo adicional a la propuesta: no es solo que la conciliación manual sea ineficiente, es que tratar datos personales de la planta en un archivo sin trazabilidad ni control de acceso diferenciado es difícil de sostener frente al régimen de protección de datos.
 
-## 📚 Referencias
+## Referencias
 
 Ver [`referencias.md`](referencias.md) para el listado completo con formato y fechas de consulta.
 
-## ✅ Checklist de autoevaluación
+## Checklist de autoevaluación
 
 - [x] Se documentó el DFD del flujo analizado, con procesos, almacenes de datos y flujos.
 - [x] Se aplicaron las 6 categorías STRIDE sobre los elementos relevantes.
