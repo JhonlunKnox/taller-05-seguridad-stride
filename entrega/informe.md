@@ -1,6 +1,6 @@
 # 📄 Informe Técnico del Taller
 
-## 🔖 Nombre del Taller
+## 🔖 Taller 5 Seguridad
 
 _Taller 5 - Evaluación de Seguridad con STRIDE_
 
