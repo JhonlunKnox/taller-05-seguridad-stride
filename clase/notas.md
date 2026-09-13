@@ -2,7 +2,7 @@
 
 ## 📆 Fecha de la sesión
 
-3 de septiembre de 2026 _(ajustar si la sesión fue en otra fecha)_
+12 de septiembre de 2026
 
 ## 👥 Integrantes presentes
 
@@ -24,16 +24,47 @@ También nos costó no caer en el error de escribir amenazas genéricas. La prim
 
 ## 🧪 Retos completados en OWASP Juice Shop
 
-Levantamos la instancia con `docker run --rm -p 3000:3000 bkimminich/juice-shop` y alcanzamos a completar los cuatro retos, no solo el mínimo de uno:
+Levantamos la instancia con `docker run --rm -p 3000:3000 bkimminich/juice-shop` y abrimos `http://localhost:3000`. Completamos los cuatro retos, no solo el mínimo de uno, y confirmamos cada uno en el tablero de puntajes (`#/score-board`). El nombre entre paréntesis es el del reto tal como aparece en ese tablero.
 
-| Reto | Categoría | Qué pasó | Fila de la tabla con la que se relaciona |
+| Reto | Categoría | Nombre en el score-board | Fila |
 |---|---|---|---|
-| 1 — Login bypass | Spoofing | Con `' OR 1=1--` en el campo de correo entramos como el primer usuario de la tabla, que resultó ser el administrador. La aplicación concatena el input en la consulta. | T7 |
-| 2 — Precio manipulado | Tampering | Interceptamos la solicitud desde la pestaña Network y cambiamos el precio antes de confirmar. El servidor lo aceptó sin recalcular contra el catálogo. | T2 |
-| 3 — Carrito ajeno | Information Disclosure | Cambiando el ID en `/rest/basket/6` a `/rest/basket/1` vimos el carrito de otro usuario. Es un IDOR clásico: hay autenticación pero no verificación de propiedad del recurso. | T4 |
-| 4 — Panel de administración | Elevation of Privilege | Entramos a `/#/administration` como usuario normal. El rol solo se validaba en el frontend para ocultar el enlace del menú. | T6 |
+| 1 — Login bypass | Spoofing | Login Admin | T7 |
+| 2 — Cantidad negativa | Tampering | Manipulate Basket | T2 |
+| 3 — Carrito ajeno | Information Disclosure | View Basket | T4 |
+| 4 — Panel de administración | Elevation of Privilege | Admin Section | T6 |
 
-Lo que más nos quedó del laboratorio es que en tres de los cuatro retos el problema no era la autenticación sino la **autorización**: el sistema sabía perfectamente quién éramos y de todas formas nos dejó hacer cosas que no nos correspondían. Eso cambió la forma en que redactamos las mitigaciones, que pasaron de "validar" a "revalidar en el servidor en cada solicitud".
+### Cómo hicimos cada uno
+
+**Reto 1 — Login Admin (Spoofing → T7).** En el campo de correo del formulario de inicio de sesión escribimos `' OR 1=1--` y una contraseña cualquiera. La consulta de autenticación concatena el correo sin parametrizar, así que la condición `OR 1=1` la vuelve siempre verdadera y devuelve el primer usuario de la tabla, que es `admin@juice-sh.op`. Entramos con sesión de administrador sin conocer ninguna contraseña.
+
+**Reto 2 — Manipulate Basket (Tampering → T2).** No fuimos por la vía del precio sino por la de la cantidad, que en esta versión es más directa y demuestra el mismo control faltante. Con la sesión abierta, desde la consola del navegador enviamos un `PUT` al recurso del ítem del carrito con un cuerpo `{"quantity":-100}`:
+
+```javascript
+fetch('http://localhost:3000/api/BasketItems/1', {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json',
+             'Authorization': 'Bearer ' + localStorage.getItem('token') },
+  body: '{"quantity":-100}'
+}).then(r => r.json()).then(console.log)
+```
+
+Al refrescar el carrito la cantidad quedó en −100. El servidor aceptó una cantidad negativa sin validarla, lo que permite dejar el total del carrito por debajo de su valor real. Es el mismo problema de fondo que el reto de precio: el backend confía en un dato que llega del cliente en vez de validarlo o recalcularlo.
+
+**Reto 3 — View Basket (Information Disclosure → T4).** Nuestro carrito era el número 7. Desde la consola consultamos el carrito de otro usuario sin ser su dueño:
+
+```javascript
+(await (await fetch('http://localhost:3000/rest/basket/1', {
+  headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+})).json()).data
+```
+
+La respuesta trajo el carrito con `UserId: 1`, que no es el nuestro. El servidor entrega cualquier carrito por su identificador sin verificar que pertenezca al usuario autenticado. Es un IDOR clásico: hay autenticación, pero no hay verificación de propiedad del recurso.
+
+**Reto 4 — Admin Section (Elevation of Privilege → T6).** Navegamos directamente a `http://localhost:3000/#/administration`. Cargó el panel de administración completo, con la lista de usuarios registrados (todos sus correos) y el feedback de clientes. El acceso a esa ruta se controla solo en el frontend ocultando el enlace del menú; el backend no revalida el rol al servir los datos.
+
+### Lo que nos quedó del laboratorio
+
+En tres de los cuatro retos el problema no era la autenticación sino la **autorización**: el sistema sabía perfectamente quién éramos y de todas formas nos dejó hacer cosas que no nos correspondían (ver el carrito ajeno, entrar al panel, alterar la cantidad). Eso coincide con que OWASP Top 10:2025 mantenga el control de acceso roto en el primer lugar de la lista, y cambió la forma en que redactamos las mitigaciones: pasaron de "validar" a "revalidar en el servidor en cada solicitud y verificar la propiedad del recurso". Guardamos capturas del panel de administración y del score-board con los cuatro retos en verde como evidencia de la entrega.
 
 ## 🧩 Boceto inicial del modelo
 
