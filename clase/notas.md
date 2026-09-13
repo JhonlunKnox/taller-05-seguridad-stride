@@ -97,11 +97,11 @@ flowchart LR
 
 | Tarea asignada | Responsable | Fecha estimada |
 |---|---|---|
-| Pasar la tabla de EdukIT al formato de la plantilla oficial y priorizar | Juan Pablo | 04/09 |
-| DFD del proceso del cliente real y catálogo de elementos | Martín | 05/09 |
-| Reconocimiento pasivo autorizado sobre el dominio institucional | Alejandro | 05/09 |
-| Tabla STRIDE del cliente real (10 filas, las 6 categorías) | Los tres | 06/09 |
-| Redacción del informe y referencias | Juan Pablo | 07/09 |
+| Pasar la tabla de EdukIT al formato de la plantilla oficial y priorizar | Juan Pablo | 07/09 |
+| DFD del proceso del cliente real y catálogo de elementos | Martín | 07/09 |
+| Reconocimiento pasivo autorizado sobre el dominio institucional | Alejandro | 08/09 |
+| Tabla STRIDE del cliente real (10 filas, las 6 categorías) | Los tres | 09/09 |
+| Redacción del informe y referencias | Juan Pablo | 13/09 |
 
 ## ⚠️ Observaciones para la Parte 2
 
